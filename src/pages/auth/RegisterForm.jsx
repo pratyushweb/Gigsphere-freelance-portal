@@ -4,6 +4,7 @@ import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { apiFetch } from '../../lib/api';
 
 export default function RegisterForm() {
   const [searchParams] = useSearchParams();
@@ -25,27 +26,10 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const data = await apiFetch('/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, role })
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        let errorMessage = 'Registration failed';
-        if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
-          errorMessage = data.errors[0].msg; // From express-validator
-        } else if (data.error) {
-          if (typeof data.error === 'string') {
-            errorMessage = data.error; // Custom string errors
-          } else if (data.error.message) {
-            errorMessage = data.error.message; // Global error handler objects
-          }
-        }
-        throw new Error(errorMessage);
-      }
 
       // Save token locally
       localStorage.setItem('accessToken', data.accessToken);
@@ -55,7 +39,8 @@ export default function RegisterForm() {
       // Navigate to correct dashboard
       navigate(`/dashboard/${data.user.role}`);
     } catch (err) {
-      setError(err.message);
+      console.error('Registration Error:', err);
+      setError(typeof err === 'string' ? err : err.message || 'Something went wrong during registration');
     } finally {
       setLoading(false);
     }
