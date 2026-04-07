@@ -43,11 +43,17 @@ app.use('/api/reviews', reviewRoutes);
 // Test database connection
 app.get('/api/test-db', async (req, res) => {
   try {
+    const isUrlDefined = !!process.env.DATABASE_URL;
+    const urlSnip = isUrlDefined ? process.env.DATABASE_URL.substring(0, 15) : 'MISSING';
+    const sslConfig = (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')) ? 'enabled' : 'disabled';
+    
     const { query } = await import('./config/db.js');
     const result = await query('SELECT NOW()');
-    res.json({ success: true, timestamp: result.rows[0], env: process.env.NODE_ENV });
+    res.json({ success: true, timestamp: result.rows[0], env: process.env.NODE_ENV, url: urlSnip, ssl: sslConfig });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message, stack: err.stack });
+    const isUrlDefined = !!process.env.DATABASE_URL;
+    const urlSnip = isUrlDefined ? process.env.DATABASE_URL.substring(0, 15) : 'MISSING';
+    res.status(500).json({ success: false, error: err.message, stack: err.stack, url: urlSnip });
   }
 });
 
