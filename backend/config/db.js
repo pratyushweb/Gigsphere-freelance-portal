@@ -9,9 +9,9 @@ const { Pool } = pg;
 // This assumes DATABASE_URL is set in .env
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')) 
-    ? { rejectUnauthorized: false } 
-    : false
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 pool.on('error', (err, client) => {
