@@ -40,6 +40,17 @@ app.use('/api/proposals', proposalRoutes);
 app.use('/api/contracts', contractRoutes);
 app.use('/api/reviews', reviewRoutes);
 
+// Test database connection
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const { query } = await import('./config/db.js');
+    const result = await query('SELECT NOW()');
+    res.json({ success: true, timestamp: result.rows[0], env: process.env.NODE_ENV });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, stack: err.stack });
+  }
+});
+
 // Base route
 app.get('/api', (req, res) => {
   res.json({ message: 'GigSphere API is running' });
