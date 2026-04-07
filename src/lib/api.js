@@ -20,12 +20,27 @@ export async function apiFetch(endpoint, options = {}) {
     headers,
   });
 
-  const data = await response.json();
+  let data = {};
+  try {
+    data = await response.json();
+  } catch (e) {
+    // If response is not JSON
+  }
 
   if (!response.ok) {
-    // If token expired, we should ideally refresh it here, 
-    // but for the MVP we will just throw the error.
-    const error = new Error(data.error || data.errors?.[0]?.msg || 'Something went wrong');
+    let message = 'Something went wrong';
+    
+    if (typeof data.error === 'string') {
+      message = data.error;
+    } else if (data.error && data.error.message) {
+      message = data.error.message;
+    } else if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+      message = data.errors[0].msg;
+    } else if (data.message) {
+      message = data.message;
+    }
+
+    const error = new Error(message);
     error.status = response.status;
     error.code = data.code;
     throw error;
